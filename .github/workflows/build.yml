@@ -93,9 +93,9 @@ jobs:
     name: Tests
     runs-on: macos-latest
     strategy:
+      fail-fast: false
       matrix:
         target: [iOS, tvOS, watchOS, visionOS]
-    continue-on-error: true
     timeout-minutes: 20
     steps:
     - uses: actions/checkout@main
