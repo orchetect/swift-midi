@@ -50,7 +50,7 @@ func hasEnvironmentVariable(_ name: String) -> Bool {
 // MARK: - CI Pipeline
 
 if hasEnvironmentVariable("GITHUB_ACTIONS") {
-    for target in package.targets.filter(\.isTest) {
+    for target in package.targets {
         if target.swiftSettings == nil { target.swiftSettings = [] }
         target.swiftSettings? += [.define("GITHUB_ACTIONS", .when(configuration: .debug))]
     }
