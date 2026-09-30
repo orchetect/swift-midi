@@ -41,36 +41,17 @@ let package = Package(
     ]
 )
 
-#if canImport(Foundation) || canImport(CoreFoundation)
-    #if canImport(Foundation)
-        import class Foundation.ProcessInfo
+// MARK: - Utilities
 
-        func getEnvironmentVar(_ name: String) -> String? {
-            ProcessInfo.processInfo.environment[name]
-        }
+func hasEnvironmentVariable(_ name: String) -> Bool {
+    ProcessInfo.processInfo.environment[name] != nil
+}
 
-    #elseif canImport(CoreFoundation)
-        import CoreFoundation
+// MARK: - CI Pipeline
 
-        func getEnvironmentVar(_ name: String) -> String? {
-            guard let rawValue = getenv(name) else { return nil }
-            return String(utf8String: rawValue)
-        }
-    #endif
-
-    func isEnvironmentVarTrue(_ name: String) -> Bool {
-        guard let value = getEnvironmentVar(name)?
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        else { return false }
-        return ["true", "yes", "1"].contains(value.lowercased())
+if hasEnvironmentVariable("GITHUB_ACTIONS") {
+    for target in package.targets.filter(\.isTest) {
+        if target.swiftSettings == nil { target.swiftSettings = [] }
+        target.swiftSettings? += [.define("GITHUB_ACTIONS", .when(configuration: .debug))]
     }
-
-    // MARK: - CI Pipeline
-
-    if isEnvironmentVarTrue("GITHUB_ACTIONS") {
-        for target in package.targets.filter(\.isTest) {
-            if target.swiftSettings == nil { target.swiftSettings = [] }
-            target.swiftSettings? += [.define("GITHUB_ACTIONS", .when(configuration: .debug))]
-        }
-    }
-#endif
+}
